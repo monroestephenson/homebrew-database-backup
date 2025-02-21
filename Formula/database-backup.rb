@@ -85,7 +85,8 @@ class DatabaseBackup < Formula
     chmod 0755, bin/"db-backup-cli"
     
     # Install config template
-    etc.install "config.json" => "database_backup/config.template.json"
+    prefix.install "config.json"
+    etc.install_symlink prefix/"config.json" => "database_backup/config.template.json"
     
     # Install documentation
     doc.install "README.md", "LICENSE"
