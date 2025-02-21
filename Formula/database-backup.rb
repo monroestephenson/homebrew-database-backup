@@ -17,6 +17,8 @@ class DatabaseBackup < Formula
   def install
     # Remove build directory if it exists
     rm_rf "build"
+    rm_rf "tests"  # Remove tests directory entirely
+    rm_rf "external"  # Remove external directory if it exists
     mkdir "build"
     
     cd "build" do
