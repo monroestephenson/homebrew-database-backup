@@ -132,7 +132,8 @@ class DatabaseBackup < Formula
     EOS
     
     (etc/"database_backup").mkpath
-    (etc/"database_backup/config.template.json").write(config)
+    config_template = etc/"database_backup/config.template.json"
+    config_template.write(config) unless config_template.exist?
     
     # Install documentation
     doc.install "README.md" if File.exist?("README.md")
