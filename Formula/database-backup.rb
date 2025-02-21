@@ -15,10 +15,20 @@ class DatabaseBackup < Formula
   depends_on "sqlite3" => :optional
 
   def install
-    system "mkdir", "build"
-    system "cd", "build", "&&", "cmake", "..", "&&", "make"
+    # Remove build directory if it exists
+    rm_rf "build"
+    mkdir "build"
     
+    cd "build" do
+      system "cmake", ".."
+      system "make"
+    end
+    
+    # Install the binary
     bin.install "build/my_db_backup_cli" => "db-backup"
+    
+    # Install shell wrapper script
+    bin.install "src/db-backup" => "db-backup-wrapper"
     
     # Install config template
     etc.install "config.json" => "database_backup/config.template.json"
@@ -28,24 +38,42 @@ class DatabaseBackup < Formula
   end
 
   def post_install
+    # Create necessary directories
     (var/"log/database_backup").mkpath
     (var/"database_backup/backups").mkpath
+    (etc/"database_backup").mkpath
+    
+    # Create user config directory
+    system "mkdir", "-p", "#{ENV["HOME"]}/.config/db-backup"
+    
+    # Copy config template if it doesn't exist
+    config_template = etc/"database_backup/config.template.json"
+    user_config = "#{ENV["HOME"]}/.config/db-backup/config.json"
+    system "cp", "-n", config_template, user_config unless File.exist?(user_config)
   end
 
   def caveats
     <<~EOS
-      Configuration template has been installed to:
-        #{etc}/database_backup/config.template.json
+      Database Backup CLI has been installed!
       
-      Copy it to ~/.config/db-backup/config.json and modify as needed:
-        mkdir -p ~/.config/db-backup
-        cp #{etc}/database_backup/config.template.json ~/.config/db-backup/config.json
+      To get started:
       
-      Set up your environment variables in ~/.zshrc or ~/.bash_profile:
-        export DB_USER=your_database_user
-        export DB_PASSWORD=your_database_password
-        export SLACK_WEBHOOK_ID=your_webhook_id
-        export ENCRYPTION_KEY_PATH=/path/to/your/key
+      1. Set up your environment variables in ~/.zshrc or ~/.bash_profile:
+         export DB_USER=your_database_user
+         export DB_PASSWORD=your_database_password
+         export SLACK_WEBHOOK_ID=your_webhook_id  # Optional
+         export ENCRYPTION_KEY_PATH=/path/to/your/key  # Optional
+      
+      2. Your configuration file is at:
+         ~/.config/db-backup/config.json
+      
+      3. Basic usage:
+         db-backup backup --type full     # Perform a full backup
+         db-backup restore <backup-file>  # Restore from backup
+         db-backup --help                # Show all commands
+      
+      For more information, see:
+        #{doc}/README.md
     EOS
   end
 
