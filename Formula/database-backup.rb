@@ -84,9 +84,55 @@ class DatabaseBackup < Formula
     (bin/"db-backup-cli").write(wrapper)
     chmod 0755, bin/"db-backup-cli"
     
-    # Install config template
-    prefix.install "config.json"
-    etc.install_symlink prefix/"config.json" => "database_backup/config.template.json"
+    # Create and install config template
+    config = <<~EOS
+      {
+          "database": {
+              "type": "mysql",
+              "host": "localhost",
+              "port": 3306,
+              "username": "${DB_USER}",
+              "password": "${DB_PASSWORD}",
+              "database": "mydb"
+          },
+          "storage": {
+              "localPath": "./backups",
+              "cloudProvider": "aws",
+              "cloudPath": "my-backup-bucket/database-backups"
+          },
+          "logging": {
+              "logPath": "./logs/backup.log",
+              "logLevel": "info",
+              "enableNotifications": true,
+              "notificationEndpoint": "https://hooks.slack.com/services/${SLACK_WEBHOOK_ID}"
+          },
+          "backup": {
+              "compression": {
+                  "enabled": true,
+                  "format": "gzip",
+                  "level": "medium"
+              },
+              "retention": {
+                  "days": 30,
+                  "maxBackups": 10
+              },
+              "schedule": {
+                  "enabled": true,
+                  "cron": "0 0 * * *"
+              }
+          },
+          "security": {
+              "encryption": {
+                  "enabled": true,
+                  "algorithm": "AES-256-GCM",
+                  "keyPath": "${ENCRYPTION_KEY_PATH}"
+              }
+          }
+      }
+    EOS
+    
+    (etc/"database_backup").mkpath
+    (etc/"database_backup/config.template.json").write(config)
     
     # Install documentation
     doc.install "README.md", "LICENSE"
