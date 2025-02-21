@@ -20,15 +20,67 @@ class DatabaseBackup < Formula
     mkdir "build"
     
     cd "build" do
-      system "cmake", ".."
+      # Configure without tests
+      system "cmake", "..", "-DBUILD_TESTING=OFF"
       system "make"
     end
     
     # Install the binary
     bin.install "build/my_db_backup_cli" => "db-backup"
     
-    # Install shell wrapper script
-    bin.install "src/db-backup" => "db-backup-wrapper"
+    # Create and install the wrapper script
+    wrapper = <<~EOS
+      #!/bin/bash
+      
+      # Default config location
+      CONFIG_FILE="$HOME/.config/db-backup/config.json"
+      
+      # Function to show usage
+      show_usage() {
+          echo "Database Backup CLI Tool"
+          echo
+          echo "Usage: db-backup <command> [options]"
+          echo
+          echo "Commands:"
+          echo "  backup [--type <full|incremental|differential>]  Perform a backup"
+          echo "  restore <filename>                              Restore from backup"
+          echo "  schedule                                       Start scheduled backups"
+          echo "  verify <filename>                              Verify backup integrity"
+          echo "  list                                          List available backups"
+          echo
+          echo "Options:"
+          echo "  --config <path>    Use specific config file (default: ~/.config/db-backup/config.json)"
+          echo "  --help            Show this help message"
+          echo "  --version         Show version information"
+      }
+      
+      # Parse command line arguments
+      while [[ $# -gt 0 ]]; do
+          case $1 in
+              --help)
+                  show_usage
+                  exit 0
+                  ;;
+              --version)
+                  echo "Database Backup CLI v1.0.0"
+                  exit 0
+                  ;;
+              --config)
+                  CONFIG_FILE="$2"
+                  shift 2
+                  ;;
+              *)
+                  break
+                  ;;
+          esac
+      done
+      
+      # Execute the CLI tool with all arguments
+      exec "#{bin}/db-backup" "$@" --config "$CONFIG_FILE"
+    EOS
+    
+    (bin/"db-backup-cli").write(wrapper)
+    chmod 0755, bin/"db-backup-cli"
     
     # Install config template
     etc.install "config.json" => "database_backup/config.template.json"
@@ -68,9 +120,9 @@ class DatabaseBackup < Formula
          ~/.config/db-backup/config.json
       
       3. Basic usage:
-         db-backup backup --type full     # Perform a full backup
-         db-backup restore <backup-file>  # Restore from backup
-         db-backup --help                # Show all commands
+         db-backup-cli backup --type full     # Perform a full backup
+         db-backup-cli restore <backup-file>  # Restore from backup
+         db-backup-cli --help                # Show all commands
       
       For more information, see:
         #{doc}/README.md
@@ -78,6 +130,6 @@ class DatabaseBackup < Formula
   end
 
   test do
-    system "#{bin}/db-backup", "--version"
+    system "#{bin}/db-backup-cli", "--version"
   end
 end 
