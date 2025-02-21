@@ -135,7 +135,7 @@ class DatabaseBackup < Formula
     (etc/"database_backup/config.template.json").write(config)
     
     # Install documentation
-    doc.install "README.md", "LICENSE"
+    doc.install "README.md" if File.exist?("README.md")
   end
 
   def post_install
