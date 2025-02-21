@@ -21,7 +21,7 @@ class DatabaseBackup < Formula
     
     cd "build" do
       # Configure without tests
-      system "cmake", "..", "-DBUILD_TESTING=OFF"
+      system "cmake", "..", "-DBUILD_TESTS=OFF"
       system "make"
     end
     
