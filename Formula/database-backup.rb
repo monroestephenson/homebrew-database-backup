@@ -28,7 +28,7 @@ class DatabaseBackup < Formula
     end
     
     # Install the binary
-    bin.install "build/my_db_backup_cli" => "db-backup"
+    bin.install "build/database-backup" => "database-backup"
     
     # Create and install the wrapper script
     wrapper = <<~EOS
@@ -41,7 +41,7 @@ class DatabaseBackup < Formula
       show_usage() {
           echo "Database Backup CLI Tool"
           echo
-          echo "Usage: db-backup <command> [options]"
+          echo "Usage: database-backup <command> [options]"
           echo
           echo "Commands:"
           echo "  backup [--type <full|incremental|differential>]  Perform a backup"
@@ -78,11 +78,11 @@ class DatabaseBackup < Formula
       done
       
       # Execute the CLI tool with all arguments
-      exec "#{bin}/db-backup" "$@" --config "$CONFIG_FILE"
+      exec "#{bin}/database-backup" "$@" --config "$CONFIG_FILE"
     EOS
     
-    (bin/"db-backup-cli").write(wrapper)
-    chmod 0755, bin/"db-backup-cli"
+    (bin/"database-backup-cli").write(wrapper)
+    chmod 0755, bin/"database-backup-cli"
     
     # Create and install config template
     config = <<~EOS
@@ -145,13 +145,26 @@ class DatabaseBackup < Formula
     (var/"database_backup/backups").mkpath
     (etc/"database_backup").mkpath
     
-    # Create user config directory
-    system "mkdir", "-p", "#{ENV["HOME"]}/.config/db-backup"
-    
-    # Copy config template if it doesn't exist
-    config_template = etc/"database_backup/config.template.json"
-    user_config = "#{ENV["HOME"]}/.config/db-backup/config.json"
-    system "cp", "-n", config_template, user_config unless File.exist?(user_config)
+    # Print instructions for user directory setup
+    ohai "Next Steps"
+    puts <<~EOS
+      To complete the setup:
+      
+      1. Create the config directory:
+         mkdir -p ~/.config/db-backup
+      
+      2. Copy the config template:
+         cp #{etc}/database_backup/config.template.json ~/.config/db-backup/config.json
+      
+      3. Set up your environment variables in ~/.zshrc or ~/.bash_profile:
+         export DB_USER=your_database_user
+         export DB_PASSWORD=your_database_password
+         export SLACK_WEBHOOK_ID=your_webhook_id  # Optional
+         export ENCRYPTION_KEY_PATH=/path/to/your/key  # Optional
+      
+      4. Edit your config file:
+         nano ~/.config/db-backup/config.json
+    EOS
   end
 
   def caveats
@@ -170,9 +183,9 @@ class DatabaseBackup < Formula
          ~/.config/db-backup/config.json
       
       3. Basic usage:
-         db-backup-cli backup --type full     # Perform a full backup
-         db-backup-cli restore <backup-file>  # Restore from backup
-         db-backup-cli --help                # Show all commands
+         database-backup backup --type full     # Perform a full backup
+         database-backup restore <backup-file>  # Restore from backup
+         database-backup --help                # Show all commands
       
       For more information, see:
         #{doc}/README.md
@@ -180,6 +193,6 @@ class DatabaseBackup < Formula
   end
 
   test do
-    system "#{bin}/db-backup-cli", "--version"
+    system "#{bin}/database-backup", "--help"
   end
 end 
