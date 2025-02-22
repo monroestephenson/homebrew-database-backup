@@ -1,8 +1,8 @@
 class DatabaseBackup < Formula
   desc "Powerful database backup CLI tool with multiple database support"
   homepage "https://github.com/monroestephenson/database_backup"
-  url "https://github.com/monroestephenson/database_backup/archive/refs/tags/v1.0.3.tar.gz"
-  sha256 "50f731bf8170355c2a40aeaec9f6841132608bba1b037755b3d77c0d38eb74d5"
+  url "https://github.com/monroestephenson/database_backup/archive/refs/tags/v1.0.4.tar.gz"
+  sha256 "36cfdc3a34cdd5db6348e57dc0586c12af5b6457495db85848fd88c69cac3233"
   license "MIT"
 
   depends_on "cmake" => :build
