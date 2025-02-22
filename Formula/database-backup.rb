@@ -22,8 +22,11 @@ class DatabaseBackup < Formula
     mkdir "build"
     
     cd "build" do
-      # Configure without tests
-      system "cmake", "..", "-DBUILD_TESTS=OFF"
+      # Configure without tests and enable all database support
+      system "cmake", "..", "-DBUILD_TESTS=OFF",
+                           "-DUSE_POSTGRESQL=ON",
+                           "-DUSE_MYSQL=ON",
+                           "-DUSE_SQLITE=ON"
       system "make"
     end
     
@@ -101,7 +104,7 @@ class DatabaseBackup < Formula
               "cloudPath": "my-backup-bucket/database-backups"
           },
           "logging": {
-              "logPath": "./logs/backup.log",
+              "logPath": "./logs",
               "logLevel": "info",
               "enableNotifications": true,
               "notificationEndpoint": "https://hooks.slack.com/services/${SLACK_WEBHOOK_ID}"
