@@ -1,7 +1,7 @@
 class Hegemon < Formula
   desc "Powerful database backup and management CLI tool"
   homepage "https://github.com/monroestephenson/hegemon"
-  url "https://github.com/monroestephenson/hegemon/archive/refs/tags/v1.0.13.tar.gz"
+  url "https://github.com/monroestephenson/hegemon/archive/refs/tags/v1.0.12.tar.gz"
   sha256 "0c0424c75122dca46adef336871b0f41675b389f3554710a63d3ca86520be7de"
   license "MIT"
 
@@ -69,7 +69,7 @@ class Hegemon < Formula
                   exit 0
                   ;;
               --version)
-                  echo "Hegemon v1.0.13"
+                  echo "Hegemon v1.0.12"
                   exit 0
                   ;;
               --config)
