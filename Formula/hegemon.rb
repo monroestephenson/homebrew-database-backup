@@ -1,7 +1,7 @@
-class DatabaseBackup < Formula
-  desc "Powerful database backup CLI tool with multiple database support"
-  homepage "https://github.com/monroestephenson/database_backup"
-  url "https://github.com/monroestephenson/database_backup/archive/refs/tags/v1.0.4.tar.gz"
+class Hegemon < Formula
+  desc "Powerful database backup and management CLI tool"
+  homepage "https://github.com/monroestephenson/hegemon"
+  url "https://github.com/monroestephenson/hegemon/archive/refs/tags/v1.0.4.tar.gz"
   sha256 "36cfdc3a34cdd5db6348e57dc0586c12af5b6457495db85848fd88c69cac3233"
   license "MIT"
 
@@ -31,20 +31,20 @@ class DatabaseBackup < Formula
     end
     
     # Install the binary
-    bin.install "build/database-backup" => "database-backup"
+    bin.install "build/hegemon" => "hegemon"
     
     # Create and install the wrapper script
     wrapper = <<~EOS
       #!/bin/bash
       
       # Default config location
-      CONFIG_FILE="$HOME/.config/db-backup/config.json"
+      CONFIG_FILE="$HOME/.config/hegemon/config.json"
       
       # Function to show usage
       show_usage() {
-          echo "Database Backup CLI Tool"
+          echo "Hegemon - Database Management CLI"
           echo
-          echo "Usage: database-backup <command> [options]"
+          echo "Usage: hegemon <command> [options]"
           echo
           echo "Commands:"
           echo "  backup [--type <full|incremental|differential>]  Perform a backup"
@@ -54,7 +54,7 @@ class DatabaseBackup < Formula
           echo "  list                                          List available backups"
           echo
           echo "Options:"
-          echo "  --config <path>    Use specific config file (default: ~/.config/db-backup/config.json)"
+          echo "  --config <path>    Use specific config file (default: ~/.config/hegemon/config.json)"
           echo "  --help            Show this help message"
           echo "  --version         Show version information"
       }
@@ -67,7 +67,7 @@ class DatabaseBackup < Formula
                   exit 0
                   ;;
               --version)
-                  echo "Database Backup CLI v1.0.0"
+                  echo "Hegemon v1.0.4"
                   exit 0
                   ;;
               --config)
@@ -81,11 +81,11 @@ class DatabaseBackup < Formula
       done
       
       # Execute the CLI tool with all arguments
-      exec "#{bin}/database-backup" "$@" --config "$CONFIG_FILE"
+      exec "#{bin}/hegemon" "$@" --config "$CONFIG_FILE"
     EOS
     
-    (bin/"database-backup-cli").write(wrapper)
-    chmod 0755, bin/"database-backup-cli"
+    (bin/"hegemon-cli").write(wrapper)
+    chmod 0755, bin/"hegemon-cli"
     
     # Create and install config template
     config = <<~EOS
@@ -134,8 +134,8 @@ class DatabaseBackup < Formula
       }
     EOS
     
-    (etc/"database_backup").mkpath
-    config_template = etc/"database_backup/config.template.json"
+    (etc/"hegemon").mkpath
+    config_template = etc/"hegemon/config.template.json"
     config_template.write(config) unless config_template.exist?
     
     # Install documentation
@@ -144,9 +144,9 @@ class DatabaseBackup < Formula
 
   def post_install
     # Create necessary directories
-    (var/"log/database_backup").mkpath
-    (var/"database_backup/backups").mkpath
-    (etc/"database_backup").mkpath
+    (var/"log/hegemon").mkpath
+    (var/"hegemon/backups").mkpath
+    (etc/"hegemon").mkpath
     
     # Print instructions for user directory setup
     ohai "Next Steps"
@@ -154,10 +154,10 @@ class DatabaseBackup < Formula
       To complete the setup:
       
       1. Create the config directory:
-         mkdir -p ~/.config/db-backup
+         mkdir -p ~/.config/hegemon
       
       2. Copy the config template:
-         cp #{etc}/database_backup/config.template.json ~/.config/db-backup/config.json
+         cp #{etc}/hegemon/config.template.json ~/.config/hegemon/config.json
       
       3. Set up your environment variables in ~/.zshrc or ~/.bash_profile:
          export DB_USER=your_database_user
@@ -166,13 +166,13 @@ class DatabaseBackup < Formula
          export ENCRYPTION_KEY_PATH=/path/to/your/key  # Optional
       
       4. Edit your config file:
-         nano ~/.config/db-backup/config.json
+         nano ~/.config/hegemon/config.json
     EOS
   end
 
   def caveats
     <<~EOS
-      Database Backup CLI has been installed!
+      Hegemon has been installed!
       
       To get started:
       
@@ -183,12 +183,12 @@ class DatabaseBackup < Formula
          export ENCRYPTION_KEY_PATH=/path/to/your/key  # Optional
       
       2. Your configuration file is at:
-         ~/.config/db-backup/config.json
+         ~/.config/hegemon/config.json
       
       3. Basic usage:
-         database-backup backup --type full     # Perform a full backup
-         database-backup restore <backup-file>  # Restore from backup
-         database-backup --help                # Show all commands
+         hegemon backup --type full     # Perform a full backup
+         hegemon restore <backup-file>  # Restore from backup
+         hegemon --help                # Show all commands
       
       For more information, see:
         #{doc}/README.md
@@ -196,6 +196,6 @@ class DatabaseBackup < Formula
   end
 
   test do
-    system "#{bin}/database-backup", "--help"
+    system "#{bin}/hegemon", "--help"
   end
 end 
