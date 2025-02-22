@@ -1,7 +1,7 @@
 class Hegemon < Formula
   desc "Powerful database backup and management CLI tool"
   homepage "https://github.com/monroestephenson/hegemon"
-  url "https://github.com/monroestephenson/hegemon/archive/refs/tags/v1.0.12.tar.gz"
+  url "https://github.com/monroestephenson/hegemon/archive/refs/tags/v1.0.13.tar.gz"
   sha256 "0c0424c75122dca46adef336871b0f41675b389f3554710a63d3ca86520be7de"
   license "MIT"
 
@@ -9,6 +9,7 @@ class Hegemon < Formula
   depends_on "spdlog"
   depends_on "nlohmann-json"
   depends_on "cli11"
+  depends_on "openssl"
   depends_on "mysql-connector-c++" => :optional
   depends_on "libpq" => :optional
   depends_on "mongo-cxx-driver" => :optional
@@ -26,7 +27,8 @@ class Hegemon < Formula
       system "cmake", "..", "-DBUILD_TESTS=OFF",
                            "-DUSE_POSTGRESQL=ON",
                            "-DUSE_MYSQL=ON",
-                           "-DUSE_SQLITE=ON"
+                           "-DUSE_SQLITE=ON",
+                           "-DCMAKE_BUILD_TYPE=Release"
       system "make"
     end
     
@@ -67,7 +69,7 @@ class Hegemon < Formula
                   exit 0
                   ;;
               --version)
-                  echo "Hegemon v1.0.4"
+                  echo "Hegemon v1.0.13"
                   exit 0
                   ;;
               --config)
@@ -94,20 +96,21 @@ class Hegemon < Formula
               "type": "mysql",
               "host": "localhost",
               "port": 3306,
-              "username": "${DB_USER}",
-              "password": "${DB_PASSWORD}",
+              "credentials": {
+                  "username": "${DB_USER}",
+                  "passwordKey": "hegemon.mysql.${DB_USER}.password",
+                  "preferredSources": ["keystore", "environment", "file"]
+              },
               "database": "mydb"
           },
           "storage": {
               "localPath": "./backups",
-              "cloudProvider": "aws",
-              "cloudPath": "my-backup-bucket/database-backups"
+              "cloudProvider": "local"
           },
           "logging": {
               "logPath": "./logs",
               "logLevel": "info",
-              "enableNotifications": true,
-              "notificationEndpoint": "https://hooks.slack.com/services/${SLACK_WEBHOOK_ID}"
+              "enableNotifications": false
           },
           "backup": {
               "compression": {
@@ -120,15 +123,20 @@ class Hegemon < Formula
                   "maxBackups": 10
               },
               "schedule": {
-                  "enabled": true,
-                  "cron": "0 0 * * *"
+                  "enabled": false
               }
           },
           "security": {
               "encryption": {
+                  "enabled": false
+              },
+              "credentialStore": {
                   "enabled": true,
-                  "algorithm": "AES-256-GCM",
-                  "keyPath": "${ENCRYPTION_KEY_PATH}"
+                  "type": "keystore",
+                  "keyPrefix": "hegemon",
+                  "options": {
+                      "service": "hegemon-db-backup"
+                  }
               }
           }
       }
@@ -162,11 +170,23 @@ class Hegemon < Formula
       3. Set up your environment variables in ~/.zshrc or ~/.bash_profile:
          export DB_USER=your_database_user
          export DB_PASSWORD=your_database_password
-         export SLACK_WEBHOOK_ID=your_webhook_id  # Optional
-         export ENCRYPTION_KEY_PATH=/path/to/your/key  # Optional
       
       4. Edit your config file:
          nano ~/.config/hegemon/config.json
+      
+      5. For secure credential storage:
+         - On macOS, store your password in Keychain:
+           security add-generic-password -s hegemon -a hegemon.mysql.$DB_USER.password -w
+      
+      6. Basic usage:
+         hegemon backup --type full     # Perform a full backup
+         hegemon restore <backup-file>  # Restore from backup
+         hegemon list                  # List all backups
+         hegemon verify <backup-file>  # Verify backup integrity
+         hegemon --help               # Show all commands
+      
+      For more information, see:
+        #{doc}/README.md
     EOS
   end
 
@@ -179,16 +199,20 @@ class Hegemon < Formula
       1. Set up your environment variables in ~/.zshrc or ~/.bash_profile:
          export DB_USER=your_database_user
          export DB_PASSWORD=your_database_password
-         export SLACK_WEBHOOK_ID=your_webhook_id  # Optional
-         export ENCRYPTION_KEY_PATH=/path/to/your/key  # Optional
       
       2. Your configuration file is at:
          ~/.config/hegemon/config.json
       
-      3. Basic usage:
+      3. For secure credential storage:
+         - On macOS, store your password in Keychain:
+           security add-generic-password -s hegemon -a hegemon.mysql.$DB_USER.password -w
+      
+      4. Basic usage:
          hegemon backup --type full     # Perform a full backup
          hegemon restore <backup-file>  # Restore from backup
-         hegemon --help                # Show all commands
+         hegemon list                  # List all backups
+         hegemon verify <backup-file>  # Verify backup integrity
+         hegemon --help               # Show all commands
       
       For more information, see:
         #{doc}/README.md
