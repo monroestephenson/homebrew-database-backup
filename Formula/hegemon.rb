@@ -2,7 +2,7 @@ class Hegemon < Formula
   desc "Powerful database backup and management CLI tool"
   homepage "https://github.com/monroestephenson/hegemon"
   url "https://github.com/monroestephenson/hegemon/archive/refs/tags/v1.0.13.tar.gz"
-  sha256 "1a76f4c98c9e0d58d10c63f43e6360f72fc0f29c30c08a193661c09be009e4bd"
+  sha256 "cd8dc1ffd597032944dd0577df55e90398b3473a4ee8b20970277f56089a6601"
   license "MIT"
 
   depends_on "cmake" => :build
